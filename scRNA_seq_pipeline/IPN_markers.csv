@@ -1,0 +1,31 @@
+﻿NeuN,Neuron
+Map2,Neuron
+Thy1,Neuron
+Stmn2,Neuron
+Opalin,Oligodendrocyte 
+Mog,Oligodendrocyte 
+Gad2,GABAergic Neuron
+Gad1,GABAergic Neuron
+Slc6a1,GABAergic Neuron
+Cx3cr1,Microglia
+Cd68,Microglia
+Tmem119,Microglia
+C1qc,Microglia
+Slc4a4,Astrocyte
+Ntsr2,Astrocyte
+Gfap,Astrocyte
+Aldh1l1,Astrocyte
+Pdgfra,Oligodendrocyte Precursor Cell
+Gpr17,Oligodendrocyte Precursor Cell
+Ccnd1,Oligodendrocyte Precursor Cell
+Ng2,Oligodendrocyte Precursor Cell
+Cldn5,Endothelial
+Flt1,Endothelial
+Tagln,Mural 
+Sst ,Sst+ Neuron
+Tph,Serotonergic Neuron
+Slc6a4,Serotonergic Neuron
+Slc18a3,Cholinergic Neuron 
+Ache ,Cholinergic Neuron 
+Foxj1,Ependymal
+Fam216b,Ependymal

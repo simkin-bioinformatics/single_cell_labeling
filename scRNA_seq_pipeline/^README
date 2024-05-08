@@ -1,0 +1,47 @@
+##Overall Goals of this Pipeline
+- Input a pair of fastq sample folders and a file containing markers for cells of interest
+- output a labelled umap
+- output differential expression of various genes within a partiular cell type chosen by the user
+
+
+
+
+
+##Installation from terminal of necessary tools
+- install cellranger
+https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/installation
+
+- install mambaforge
+https://mamba.readthedocs.io/en/latest/installation.html
+
+- create a mamba environment for this pipeline with a name you can remember
+mamba create -n nameofmyenvironment
+
+- activate the environment (you can deactivate at any time with "mamba deactivate")
+mamba activate nameofmyenvironment
+
+- install snakemake into the environment
+mamba install -c conda-forge -c bioconda snakemake
+
+- install seurat into the environment
+mamba install -c conda-forge r-seurat
+
+
+
+
+##Using the pipeline
+- copy the pipeline folder into the directory where you want the outputs to show up
+- modify the IPN_markers.csv in your copy to suit your needs
+- open your copy of the config file
+- modify the directories for fastq_folder, reference_genome, and gene_cluster_markers
+- modify the samples to match the pair of samples in your fastq_folder that you will be comparing
+- run the pipeline by activating your environment you created during the installation phase, changing directory into the folder that contains the Snakefile, then typing "snakemake --cores 4" (you can choose to use more cores or less if desired)
+- review the files in the 'intermediate' folder to see if you want to adjust any QC parameters or marker features in the config file.  rerun the 'snakemake --cores 4' command if you make any adjustments
+- review the 'actual_cluster_labels' file in the intermediate folder and edit it to make sure the clusters are named appropriately.  Rerun the 'snakemake --cores 4' command when you are finished
+- Change the cell_type_of_interest in the config file to match any of the cluster names you finalized while renaming the actual_cluster_labels, then rerun the 'snakemake --cores 4' command
+
+
+## Advanced Options and things to watch out for
+- if you change parameters that affect clustering, such as the QC parameters, resolution, or principal_components, the actual_cluster_names will revert to the automatically generated ones and manual edits will be lost
+- if you wish to compare results with different parameters you can adjust the run_number in the config file.  This will create a new folder labelled with your chosen run_number and put all outputs there.  The old folder will not be touched unless you change the run number back again
+- Principal components and resolution can be adjusted at the bottom of the config file, but most users will probably want to leave them as is

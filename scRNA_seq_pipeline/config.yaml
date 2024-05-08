@@ -1,0 +1,48 @@
+# Path to directory containing fastq samples and directory containing reference genome 
+#(folder names need to end with a "/")
+fastq_folder : /home/charlie/big_data/scRNA_seq_pipeline_sample_inputs/fastq_folder/
+reference_genome : /home/charlie/big_data/scRNA_seq_pipeline_sample_inputs/reference_genome_mm10-2020-A/
+gene_cluster_markers : markers.csv
+
+
+#Sample Names (names of folders in the fastq_folder that you want to compare)
+#These are used in figure legends of output graphs, so keep these short and without any '_' or special characters (use numbers and letters only)
+samples:
+  - T00
+  - T05
+
+# Run Number (adjust if you want to do multiple runs with different settings to compare them)
+# A new folder will be created if you change the run number and rerun snakemake
+run_number: 1
+
+#Project name
+project: STRESS
+
+# QC parameters
+min_features: 200
+max_features: 7000
+max_percent_mt: 10
+
+#Expression level of markers of interest pre-clustering
+features:
+  - Fos
+  - Map2
+  - Gad2
+
+#Expression level of markers of interest post-clustering
+features2:
+  - Map2
+  - Thy1
+  - Sst
+  - Gad1
+  - Gad2
+  - Fos
+
+#Differential Expression Group of Interest (see actual cluster labels text file)
+cell_type_of_interest: Neuron
+
+#Resolution to be used for clustering, standard is 0.5 but user has option to adjust here
+resolution: 0.5
+
+#Number of principal components to use, leave it as 'automatic' unless you want to manually change it to a specific number
+principal_components: automatic

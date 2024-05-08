@@ -1,0 +1,103 @@
+configfile: "config.yaml"
+
+sample_1 = config['samples'][0]
+sample_2 = config['samples'][1]
+run_label = '_'+sample_2+'_vs_'+sample_1+'_run_'+str(config['run_number'])
+
+output_folder = config['project']+'_'+sample_2+'_vs_'+sample_1+'_run_'+str(config['run_number'])+'/'
+
+rule All:
+  input:
+    output_folder+"output/differential_expression_"+config['cell_type_of_interest']+run_label+'.csv',
+    output_folder+"output/differential_expression_"+config['cell_type_of_interest']+'_'+run_label+'.pdf',
+  shell:
+    'cp config.yaml '+output_folder+'/config'+run_label+'.yaml'
+
+rule run_cellranger:
+  input:
+    fastqs = config["fastq_folder"]+'{sample}',
+    reference = config["reference_genome"]
+  output:
+    filtered_features = directory('cellranger_output/{sample}/outs/filtered_feature_bc_matrix')
+  shell:
+    'rm -r cellranger_output/{wildcards.sample}; '
+    'cd cellranger_output/; '
+    'cellranger count --id={wildcards.sample} '
+    '--fastqs={input.fastqs} '
+    '--include-introns=false '
+    '--transcriptome={input.reference}'
+
+rule u1_QC:
+  input:
+    filtered_features = 'cellranger_output/{sample}/outs/filtered_feature_bc_matrix'
+  output:
+    QC_plot = output_folder+'intermediate/QC_plots_{sample}'+'_run_'+str(config['run_number'])+'.pdf',
+    rds = output_folder+'intermediate/rds/1_QC_{sample}'+'_run_'+str(config['run_number'])+'.rds'
+  params:
+    project = config['project'],
+    min_features = config['min_features'],
+    max_features = config['max_features'],
+    max_percent_mt = config['max_percent_mt']
+  script:
+    'scripts/1_qc.R'
+
+rule u2_umap_reduction:
+  input:
+    rds = expand(output_folder+'intermediate/rds/1_QC_{sample}'+'_run_'+str(config['run_number'])+'.rds', sample = config['samples'])
+  output:
+    output_folder+'intermediate/expression_of_markers_pre_clustering'+run_label+'.pdf',
+    output_folder+'output/umap_no_labels'+run_label+'.pdf',
+    output_folder+'intermediate/rds/2_stress_combined'+run_label+'.rds',
+    output_folder+'intermediate/expression_of_markers_post_clustering'+run_label+'.pdf',
+    output_folder+'intermediate/elbow_plot'+run_label+'.pdf'
+  params:
+    sample_1_rds = output_folder+'intermediate/rds/1_QC_'+sample_1+'_run_'+str(config['run_number'])+'.rds',
+    sample_2_rds = output_folder+'intermediate/rds/1_QC_'+sample_2+'_run_'+str(config['run_number'])+'.rds',
+    features = config['features'],
+    features2 = config['features2'],
+    resolution = config['resolution'],
+    name_of_sample_1 = sample_1,
+    name_of_sample_2 = sample_2,
+    principal_components = config['principal_components']
+  script:
+    'scripts/2_umap_reduction.R'
+
+rule u3a_find_cluster_markers:
+  input:
+    output_folder+'intermediate/rds/2_stress_combined'+run_label+'.rds',
+  output:
+    output_folder+'intermediate/cluster_markers'+run_label+'.tsv',
+  script:
+    'scripts/3a_find_cluster_markers.R'
+
+rule u3b_match_cluster_markers:
+  input:
+    config['gene_cluster_markers'],
+    output_folder+'intermediate/cluster_markers'+run_label+'.tsv',
+  output:
+    output_folder+'intermediate/actual_cluster_labels'+run_label+'.txt',
+  script:
+    'scripts/3b_match_cluster_markers.py'
+
+rule u3c_annotation:
+  input:
+    output_folder+'intermediate/actual_cluster_labels'+run_label+'.txt',
+    output_folder+'intermediate/rds/2_stress_combined'+run_label+'.rds',
+  output:
+    output_folder+'intermediate/rds/3c_stress_combined_annotated'+run_label+'.rds',
+    output_folder+'output/umap_yes_labels'+run_label+'.pdf'
+  script:
+    'scripts/3c_apply_cluster_labels.R'
+
+rule u4_differential_expression:
+  input:
+    output_folder+'intermediate/rds/3c_stress_combined_annotated'+run_label+'.rds',
+  output:
+    output_folder+"output/differential_expression_"+config['cell_type_of_interest']+run_label+'.csv',
+    output_folder+"output/differential_expression_"+config['cell_type_of_interest']+'_'+run_label+'.pdf',
+  params:
+    cell_type_of_interest_s2 = config['cell_type_of_interest']+'_'+sample_2,
+    cell_type_of_interest_s1 = config['cell_type_of_interest']+'_'+sample_1,
+    chart_title = config['cell_type_of_interest']+' '+sample_2+' vs '+ sample_1
+  script:
+    'scripts/4_differential_expression.R'
